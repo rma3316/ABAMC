@@ -45,31 +45,37 @@ jobs:
         include:
           - os: ubuntu-24.04
             artifact-name: Linux
+            updater-artifact: Linux-x86_64
             qt-version: 6.11.2
 
           - os: ubuntu-24.04-arm
             artifact-name: Linux-aarch64
+            updater-artifact: Linux-aarch64
             qt-version: 6.11.2
 
           - os: windows-2022
             artifact-name: Windows-MinGW-w64
+            updater-artifact: Windows-x64-mingw
             msystem: CLANG64
             vcvars-arch: amd64_x86
             qt-version: 6.11.2
 
           - os: windows-2022
             artifact-name: Windows-MSVC
+            updater-artifact: Windows-x64
             # TODO(@getchoo): This is the default in setup-dependencies/windows. Why isn't it working?!?!
             vcvars-arch: amd64
             qt-version: 6.11.2
 
           - os: windows-11-arm
             artifact-name: Windows-MSVC-arm64
+            updater-artifact: Windows-arm64
             vcvars-arch: arm64
             qt-version: 6.11.2
 
           - os: macos-26
             artifact-name: macOS
+            updater-artifact: macOS
             macosx-deployment-target: 13.0
             qt-version: 6.11.2
 
@@ -80,7 +86,7 @@ jobs:
         shell: ${{ matrix.msystem != '' && 'msys2 {0}' || 'bash' }}
 
     env:
-      ARTIFACT_NAME: ${{ matrix.artifact-name }}-Qt6
+      ARTIFACT_NAME: ${{ matrix.updater-artifact }}
       BUILD_PLATFORM: official
       BUILD_TYPE: ${{ inputs.build-type || 'Debug' }}
       CMAKE_PRESET: ci
