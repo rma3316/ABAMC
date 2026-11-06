@@ -100,6 +100,8 @@ class MainWindow : public QMainWindow {
 
     void on_actionTransferMods_triggered();
 
+    void on_actionRunServer_triggered();
+
     void on_actionREDDIT_triggered();
 
     void on_actionMATRIX_triggered();

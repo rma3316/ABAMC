@@ -107,6 +107,7 @@
 #include "ui/dialogs/NewInstanceDialog.h"
 #include "packcode/PackCodeCreateDialog.h"
 #include "packcode/PackCodeImportDialog.h"
+#include "packcode/PackServerDialog.h"
 #include "packcode/PackTransferDialog.h"
 #include "ui/dialogs/NewsDialog.h"
 #include "ui/dialogs/ProgressDialog.h"
@@ -1045,6 +1046,12 @@ void MainWindow::on_actionCreatePackCode_triggered()
 void MainWindow::on_actionTransferMods_triggered()
 {
     PackTransferDialog dialog(this);
+    dialog.exec();
+}
+
+void MainWindow::on_actionRunServer_triggered()
+{
+    PackServerDialog dialog(this);
     dialog.exec();
 }
 

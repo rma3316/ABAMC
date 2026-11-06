@@ -308,6 +308,10 @@ set(MINECRAFT_SOURCES
     packcode/PackCodeCreateDialog.h
     packcode/PackTransferDialog.cpp
     packcode/PackTransferDialog.h
+    packcode/PackServerSetup.cpp
+    packcode/PackServerSetup.h
+    packcode/PackServerDialog.cpp
+    packcode/PackServerDialog.h
     minecraft/VersionFile.cpp
     minecraft/VersionFile.h
     minecraft/VersionFilterData.h

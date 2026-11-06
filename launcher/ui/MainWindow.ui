@@ -54,6 +54,7 @@
    <addaction name="actionLaunchInstance"/>
    <addaction name="actionCreatePackCode"/>
    <addaction name="actionTransferMods"/>
+   <addaction name="actionRunServer"/>
    <addaction name="separator"/>
    <addaction name="actionFoldersButton"/>
    <addaction name="actionSettings"/>
@@ -146,6 +147,7 @@
     <addaction name="actionNewInstance"/>
     <addaction name="actionCreatePackCode"/>
     <addaction name="actionTransferMods"/>
+    <addaction name="actionRunServer"/>
     <addaction name="separator"/>
     <addaction name="actionLaunchInstance"/>
     <addaction name="actionKillInstance"/>
@@ -325,6 +327,14 @@
    </property>
    <property name="toolTip">
     <string>위험 기능. jar를 코드로 보내고, 받는 사람이 수락해야 들어갑니다.</string>
+   </property>
+  </action>
+  <action name="actionRunServer">
+   <property name="text">
+    <string>실험: 서버</string>
+   </property>
+   <property name="toolTip">
+    <string>실험 기능. 코드와 같은 버전으로 이 컴퓨터에서 마크 서버를 만듭니다.</string>
    </property>
   </action>
   <action name="actionCheckUpdate">
