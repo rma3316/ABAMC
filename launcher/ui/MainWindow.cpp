@@ -107,6 +107,7 @@
 #include "ui/dialogs/NewInstanceDialog.h"
 #include "packcode/PackCodeCreateDialog.h"
 #include "packcode/PackCodeImportDialog.h"
+#include "packcode/PackTransferDialog.h"
 #include "ui/dialogs/NewsDialog.h"
 #include "ui/dialogs/ProgressDialog.h"
 #include "ui/dialogs/skins/SkinManageDialog.h"
@@ -1038,6 +1039,12 @@ void MainWindow::installModZip(const QString& instanceId, const QString& zipPath
 void MainWindow::on_actionCreatePackCode_triggered()
 {
     PackCodeCreateDialog dialog(this);
+    dialog.exec();
+}
+
+void MainWindow::on_actionTransferMods_triggered()
+{
+    PackTransferDialog dialog(this);
     dialog.exec();
 }
 

@@ -53,6 +53,7 @@
    <addaction name="actionNewInstance"/>
    <addaction name="actionLaunchInstance"/>
    <addaction name="actionCreatePackCode"/>
+   <addaction name="actionTransferMods"/>
    <addaction name="separator"/>
    <addaction name="actionFoldersButton"/>
    <addaction name="actionSettings"/>
@@ -144,6 +145,7 @@
     <addaction name="actionAddInstance"/>
     <addaction name="actionNewInstance"/>
     <addaction name="actionCreatePackCode"/>
+    <addaction name="actionTransferMods"/>
     <addaction name="separator"/>
     <addaction name="actionLaunchInstance"/>
     <addaction name="actionKillInstance"/>
@@ -315,6 +317,14 @@
    </property>
    <property name="toolTip">
     <string>모드와 서버 주소가 들어 있는 코드를 만듭니다.</string>
+   </property>
+  </action>
+  <action name="actionTransferMods">
+   <property name="text">
+    <string>실험: 모드 보내기</string>
+   </property>
+   <property name="toolTip">
+    <string>위험 기능. jar를 코드로 보내고, 받는 사람이 수락해야 들어갑니다.</string>
    </property>
   </action>
   <action name="actionCheckUpdate">

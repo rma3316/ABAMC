@@ -98,6 +98,8 @@ class MainWindow : public QMainWindow {
 
     void on_actionCreatePackCode_triggered();
 
+    void on_actionTransferMods_triggered();
+
     void on_actionREDDIT_triggered();
 
     void on_actionMATRIX_triggered();
