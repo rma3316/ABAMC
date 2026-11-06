@@ -9,6 +9,7 @@
 
 #include <QClipboard>
 #include <QComboBox>
+#include <QIcon>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGuiApplication>
@@ -19,6 +20,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QPixmap>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QPushButton>
@@ -50,7 +52,9 @@ PackCodeCreateDialog::PackCodeCreateDialog(QWidget* parent) : QDialog(parent)
     m_search = new QLineEdit(this);
     m_search->setPlaceholderText(tr("모드 이름"));
     m_results = new QListWidget(this);
+    m_results->setIconSize(QSize(32, 32));
     m_pinned = new QListWidget(this);
+    m_pinned->setIconSize(QSize(32, 32));
     m_code = new QPlainTextEdit(this);
     m_code->setReadOnly(true);
     m_code->setPlaceholderText(tr("코드 만들기를 누르면 pc1. 코드가 나옵니다."));
@@ -184,22 +188,24 @@ void PackCodeCreateDialog::suggestLoaderVersion()
 
 void PackCodeCreateDialog::searchMods()
 {
+    ++m_searchGeneration;
+    m_iconRequests.clear();
     const QString queryText = m_search->text().trimmed();
     if (queryText.isEmpty() || minecraftVersion().isEmpty())
         return;
     QUrl url(BuildConfig.MODRINTH_PROD_URL + QStringLiteral("/search"));
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("query"), queryText);
-    query.addQueryItem(QStringLiteral("limit"), QStringLiteral("20"));
+    query.addQueryItem(QStringLiteral("limit"), QStringLiteral("50"));
     const QString facets = QStringLiteral("[[\"project_type:mod\"],[\"versions:%1\"],[\"categories:%2\"]]").arg(minecraftVersion(), loaderId());
     query.addQueryItem(QStringLiteral("facets"), facets);
     url.setQuery(query);
     auto [request, response] = Net::ApiRequest::makeByteArray(url);
     m_request = request;
     m_response = response;
-    const int generation = ++m_requestGeneration;
+    const int generation = m_searchGeneration;
     connect(request.get(), &Task::succeeded, this, [this, generation] {
-        if (generation != m_requestGeneration)
+        if (generation != m_searchGeneration)
             return;
         m_results->clear();
         const QJsonArray hits = QJsonDocument::fromJson(m_response ? *m_response : QByteArray()).object().value("hits").toArray();
@@ -207,15 +213,90 @@ void PackCodeCreateDialog::searchMods()
             const QJsonObject hit = value.toObject();
             auto* item = new QListWidgetItem(hit.value("title").toString());
             item->setData(Qt::UserRole, hit.value("project_id").toString());
+            item->setData(Qt::UserRole + 4, QStringLiteral("modrinth"));
             item->setToolTip(hit.value("description").toString());
             m_results->addItem(item);
+            loadResultIcon(item, hit.value("icon_url").toString(), generation);
+        }
+        searchCurseForge(generation);
+    });
+    connect(request.get(), &Task::failed, this, [this, generation](QString) { searchCurseForge(generation); });
+    request->start();
+}
+
+void PackCodeCreateDialog::searchCurseForge(int generation)
+{
+    if (generation != m_searchGeneration)
+        return;
+    if (APPLICATION->getFlameAPIKey().isEmpty()) {
+        if (m_results->count() == 0)
+            m_reason->setText(tr("Modrinth에는 없고, CurseForge는 API 키가 있어야 검색됩니다. 설정의 API에서 CurseForge 키를 넣으세요."));
+        return;
+    }
+    QUrl url(BuildConfig.FLAME_BASE_URL + QStringLiteral("/mods/search"));
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("gameId"), QStringLiteral("432"));
+    query.addQueryItem(QStringLiteral("classId"), QStringLiteral("6"));
+    query.addQueryItem(QStringLiteral("pageSize"), QStringLiteral("25"));
+    query.addQueryItem(QStringLiteral("searchFilter"), m_search->text().trimmed());
+    query.addQueryItem(QStringLiteral("gameVersion"), minecraftVersion());
+    query.addQueryItem(QStringLiteral("modLoaderTypes"), loaderId() == QStringLiteral("neoforge") ? QStringLiteral("[6]") : QStringLiteral("[4]"));
+    query.addQueryItem(QStringLiteral("sortField"), QStringLiteral("2"));
+    query.addQueryItem(QStringLiteral("sortOrder"), QStringLiteral("desc"));
+    url.setQuery(query);
+    auto [request, response] = Net::ApiRequest::makeByteArray(url);
+    m_request = request;
+    m_response = response;
+    connect(request.get(), &Task::succeeded, this, [this, generation] {
+        if (generation != m_searchGeneration)
+            return;
+        const QJsonArray hits = QJsonDocument::fromJson(m_response ? *m_response : QByteArray()).object().value("data").toArray();
+        for (const QJsonValue& value : hits) {
+            const QJsonObject hit = value.toObject();
+            const QString projectId = QString::number(hit.value("id").toInteger());
+            if (projectId == QStringLiteral("0"))
+                continue;
+            auto* item = new QListWidgetItem(hit.value("name").toString());
+            item->setData(Qt::UserRole, projectId);
+            item->setData(Qt::UserRole + 4, QStringLiteral("curseforge"));
+            item->setToolTip(hit.value("summary").toString());
+            m_results->addItem(item);
+            loadResultIcon(item, hit.value("logo").toObject().value("thumbnailUrl").toString(), generation);
         }
         if (m_results->count() == 0)
-            m_reason->setText(tr("이 버전과 로더에 맞는 모드가 없습니다."));
+            m_reason->setText(tr("이 마크 버전과 로더로 올라온 모드가 Modrinth와 CurseForge에 없습니다."));
         else
             m_reason->clear();
     });
-    connect(request.get(), &Task::failed, this, [this](QString reason) { m_reason->setText(reason); });
+    connect(request.get(), &Task::failed, this, [this, generation](QString reason) {
+        if (generation != m_searchGeneration)
+            return;
+        if (m_results->count() == 0)
+            m_reason->setText(reason);
+    });
+    request->start();
+}
+
+void PackCodeCreateDialog::loadResultIcon(QListWidgetItem* item, const QString& iconUrl, int generation)
+{
+    if (!item || iconUrl.isEmpty())
+        return;
+    auto [request, response] = Net::ApiRequest::makeByteArray(QUrl(iconUrl));
+    m_iconRequests.append(request);
+    connect(request.get(), &Task::succeeded, this, [this, item, response, generation] {
+        if (generation != m_searchGeneration || m_results->row(item) < 0)
+            return;
+        QPixmap pixmap;
+        if (!response || !pixmap.loadFromData(*response))
+            return;
+        const QIcon icon(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        item->setIcon(icon);
+        const QString projectId = item->data(Qt::UserRole).toString();
+        for (int i = 0; i < m_pinned->count(); ++i) {
+            if (m_pinned->item(i)->data(Qt::UserRole).toString() == projectId)
+                m_pinned->item(i)->setIcon(icon);
+        }
+    });
     request->start();
 }
 
@@ -226,28 +307,61 @@ void PackCodeCreateDialog::pinSelected()
         return;
     m_pendingProject = item->data(Qt::UserRole).toString();
     m_pendingTitle = item->text();
+    m_pendingSource = item->data(Qt::UserRole + 4).toString();
+    const QIcon icon = item->icon();
     if (m_pendingProject.isEmpty())
         return;
-    QUrl url(BuildConfig.MODRINTH_PROD_URL + "/project/" + m_pendingProject + "/version");
+    const bool curseForge = m_pendingSource == QStringLiteral("curseforge");
+    QUrl url(curseForge ? BuildConfig.FLAME_BASE_URL + "/mods/" + m_pendingProject + "/files"
+                        : BuildConfig.MODRINTH_PROD_URL + "/project/" + m_pendingProject + "/version");
     QUrlQuery query;
-    query.addQueryItem(QStringLiteral("game_versions"), QStringLiteral("[\"%1\"]").arg(minecraftVersion()));
-    query.addQueryItem(QStringLiteral("loaders"), QStringLiteral("[\"%1\"]").arg(loaderId()));
+    if (curseForge) {
+        query.addQueryItem(QStringLiteral("gameVersion"), minecraftVersion());
+        query.addQueryItem(QStringLiteral("modLoaderType"), loaderId() == QStringLiteral("neoforge") ? QStringLiteral("6") : QStringLiteral("4"));
+        query.addQueryItem(QStringLiteral("pageSize"), QStringLiteral("50"));
+    } else {
+        query.addQueryItem(QStringLiteral("game_versions"), QStringLiteral("[\"%1\"]").arg(minecraftVersion()));
+        query.addQueryItem(QStringLiteral("loaders"), QStringLiteral("[\"%1\"]").arg(loaderId()));
+    }
     url.setQuery(query);
     auto [request, response] = Net::ApiRequest::makeByteArray(url);
     m_request = request;
     m_response = response;
     const int generation = ++m_requestGeneration;
-    connect(request.get(), &Task::succeeded, this, [this, generation] {
+    connect(request.get(), &Task::succeeded, this, [this, generation, icon] {
         if (generation != m_requestGeneration)
             return;
-        const QJsonArray versions = QJsonDocument::fromJson(m_response ? *m_response : QByteArray()).array();
-        if (versions.isEmpty()) {
-            m_reason->setText(tr("이 버전과 로더에 맞는 파일이 없습니다."));
-            return;
+        const QJsonDocument document = QJsonDocument::fromJson(m_response ? *m_response : QByteArray());
+        QString versionId;
+        QString number;
+        if (m_pendingSource == QStringLiteral("curseforge")) {
+            const QJsonArray files = document.object().value("data").toArray();
+            QJsonObject chosen;
+            for (const QJsonValue& value : files) {
+                const QJsonObject file = value.toObject();
+                if (file.value("releaseType").toInt() == 1) {
+                    chosen = file;
+                    break;
+                }
+            }
+            if (chosen.isEmpty() && !files.isEmpty())
+                chosen = files.first().toObject();
+            if (chosen.isEmpty()) {
+                m_reason->setText(tr("이 버전과 로더에 맞는 파일이 없습니다."));
+                return;
+            }
+            versionId = QString::number(chosen.value("id").toInt());
+            number = chosen.value("displayName").toString();
+        } else {
+            const QJsonArray versions = document.array();
+            if (versions.isEmpty()) {
+                m_reason->setText(tr("이 버전과 로더에 맞는 파일이 없습니다."));
+                return;
+            }
+            const QJsonObject version = versions.first().toObject();
+            versionId = version.value("id").toString();
+            number = version.value("version_number").toString();
         }
-        const QJsonObject version = versions.first().toObject();
-        const QString versionId = version.value("id").toString();
-        const QString number = version.value("version_number").toString();
         if (versionId.isEmpty()) {
             m_reason->setText(tr("모드 버전 번호를 받지 못했습니다."));
             return;
@@ -259,9 +373,11 @@ void PackCodeCreateDialog::pinSelected()
             }
         }
         auto* pinned = new QListWidgetItem(m_pendingTitle + "  " + number);
+        pinned->setIcon(icon);
         pinned->setData(Qt::UserRole, m_pendingProject);
         pinned->setData(Qt::UserRole + 1, versionId);
         pinned->setData(Qt::UserRole + 2, number);
+        pinned->setData(Qt::UserRole + 4, m_pendingSource);
         m_pinned->addItem(pinned);
         m_reason->clear();
         refreshCode();
@@ -275,7 +391,10 @@ void PackCodeCreateDialog::refreshCode()
     std::vector<PackCode::ModRef> mods;
     for (int i = 0; i < m_pinned->count(); ++i) {
         auto* item = m_pinned->item(i);
-        mods.push_back(PackCode::ModRef{item->data(Qt::UserRole).toString().toStdString(), item->data(Qt::UserRole + 1).toString().toStdString()});
+        PackCode::ModRef mod{item->data(Qt::UserRole).toString().toStdString(), item->data(Qt::UserRole + 1).toString().toStdString()};
+        if (item->data(Qt::UserRole + 4).toString() == QStringLiteral("curseforge"))
+            mod.source = PackCode::ModSource::CurseForge;
+        mods.push_back(mod);
     }
     const QString serverText = m_server->text().trimmed();
     std::optional<PackCode::ServerRef> server;

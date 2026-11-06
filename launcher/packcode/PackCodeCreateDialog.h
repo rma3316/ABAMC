@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QList>
 #include <QString>
 
 #include "net/Request.h"
@@ -12,6 +13,7 @@ class QComboBox;
 class QLabel;
 class QLineEdit;
 class QListWidget;
+class QListWidgetItem;
 class QPlainTextEdit;
 class QByteArray;
 
@@ -31,6 +33,8 @@ class PackCodeCreateDialog : public QDialog {
     void loadMinecraftVersions();
     void suggestLoaderVersion();
     void searchMods();
+    void searchCurseForge(int generation);
+    void loadResultIcon(QListWidgetItem* item, const QString& iconUrl, int generation);
     void pinSelected();
     void refreshCode();
     QString loaderId() const;
@@ -47,9 +51,12 @@ class PackCodeCreateDialog : public QDialog {
     QPlainTextEdit* m_code = nullptr;
     QLabel* m_reason = nullptr;
     Net::Request::Ptr m_request;
+    QList<Net::Request::Ptr> m_iconRequests;
     QByteArray* m_response = nullptr;
     int m_requestGeneration = 0;
+    int m_searchGeneration = 0;
     Task::Ptr m_metaTask;
     QString m_pendingProject;
     QString m_pendingTitle;
+    QString m_pendingSource;
 };

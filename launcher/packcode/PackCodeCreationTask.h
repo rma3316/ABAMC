@@ -27,6 +27,8 @@ class PackCodeCreationTask final : public InstanceTask {
 
    private slots:
     void onVersionMetadata();
+    void onCurseForgeFile();
+    void onCurseForgeDownloadUrl();
     void onModFile();
 
    private:
@@ -36,4 +38,5 @@ class PackCodeCreationTask final : public InstanceTask {
     Net::Request::Ptr m_request;
     QByteArray* m_response = nullptr;
     QString m_modsDir;
+    QString m_curseFileName;
 };

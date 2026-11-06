@@ -108,13 +108,50 @@ void PackCodeCreationTask::fetchNextMod()
     setStatus(tr("모드를 받는 중: %1").arg(QString::fromStdString(mod.projectId)));
     setProgress(m_modIndex, static_cast<qint64>(m_preset.mods.size()));
     setAbortable(true);
-    const QUrl url(BuildConfig.MODRINTH_PROD_URL + "/version/" + QString::fromStdString(*mod.versionId));
+    const bool curseForge = mod.source == PackCode::ModSource::CurseForge;
+    const QUrl url = curseForge ? QUrl(BuildConfig.FLAME_BASE_URL + "/mods/" + QString::fromStdString(mod.projectId) + "/files/" +
+                                       QString::fromStdString(*mod.versionId))
+                                : QUrl(BuildConfig.MODRINTH_PROD_URL + "/version/" + QString::fromStdString(*mod.versionId));
     auto [request, response] = Net::ApiRequest::makeByteArray(url);
     m_request = request;
     m_response = response;
-    connect(request.get(), &Task::succeeded, this, &PackCodeCreationTask::onVersionMetadata);
+    connect(request.get(), &Task::succeeded, this, curseForge ? &PackCodeCreationTask::onCurseForgeFile : &PackCodeCreationTask::onVersionMetadata);
     connect(request.get(), &Task::failed, this, [this](QString reason) { emitFailed(reason); });
     request->start();
+}
+
+void PackCodeCreationTask::onCurseForgeFile()
+{
+    const QJsonObject data = QJsonDocument::fromJson(m_response ? *m_response : QByteArray()).object().value("data").toObject();
+    m_curseFileName = QFileInfo(data.value("fileName").toString()).fileName();
+    const QString downloadUrl = data.value("downloadUrl").toString();
+    if (m_curseFileName.isEmpty() || m_curseFileName == "." || m_curseFileName == "..") {
+        emitFailed(tr("모드 파일을 찾지 못했습니다."));
+        return;
+    }
+    if (!downloadUrl.isEmpty()) {
+        downloadModFile(downloadUrl, m_curseFileName);
+        return;
+    }
+    const auto& mod = m_preset.mods[static_cast<size_t>(m_modIndex)];
+    const QUrl url(BuildConfig.FLAME_BASE_URL + "/mods/" + QString::fromStdString(mod.projectId) + "/files/" +
+                   QString::fromStdString(*mod.versionId) + "/download-url");
+    auto [request, response] = Net::ApiRequest::makeByteArray(url);
+    m_request = request;
+    m_response = response;
+    connect(request.get(), &Task::succeeded, this, &PackCodeCreationTask::onCurseForgeDownloadUrl);
+    connect(request.get(), &Task::failed, this, [this](QString reason) { emitFailed(reason); });
+    request->start();
+}
+
+void PackCodeCreationTask::onCurseForgeDownloadUrl()
+{
+    const QString downloadUrl = QJsonDocument::fromJson(m_response ? *m_response : QByteArray()).object().value("data").toString();
+    if (downloadUrl.isEmpty()) {
+        emitFailed(tr("모드 파일을 찾지 못했습니다."));
+        return;
+    }
+    downloadModFile(downloadUrl, m_curseFileName);
 }
 
 void PackCodeCreationTask::onVersionMetadata()

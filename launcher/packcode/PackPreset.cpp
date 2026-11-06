@@ -790,7 +790,7 @@ Preset Preset::normalized() const
         if (std::find(seen.begin(), seen.end(), key) != seen.end())
             throw Error("모드가 중복되었습니다: " + project);
         seen.push_back(key);
-        nextMods.push_back(ModRef{project, version});
+        nextMods.push_back(ModRef{project, version, mod.source});
     }
     std::sort(nextMods.begin(), nextMods.end(), [](const ModRef& left, const ModRef& right) {
         return lowerAscii(left.projectId) < lowerAscii(right.projectId);
@@ -824,6 +824,8 @@ std::string canonicalJson(const Preset& preset)
         if (i)
             json += ",";
         json += "{\"project_id\":" + jsonString(value.mods[i].projectId);
+        if (value.mods[i].source == ModSource::CurseForge)
+            json += ",\"source\":\"curseforge\"";
         if (value.mods[i].versionId)
             json += ",\"version_id\":" + jsonString(*value.mods[i].versionId);
         json += "}";
@@ -876,6 +878,7 @@ Preset parsePresetJson(const std::string& json)
                 cursor.expect('{');
                 std::optional<std::string> project;
                 std::optional<std::string> version;
+                ModSource source = ModSource::Modrinth;
                 bool firstField = true;
                 while (cursor.peek() != '}') {
                     if (!firstField)
@@ -883,7 +886,7 @@ Preset parsePresetJson(const std::string& json)
                     firstField = false;
                     const std::string field = cursor.string();
                     cursor.expect(':');
-                    if (!allowedKey(field, {"project_id", "version_id"}))
+                    if (!allowedKey(field, {"project_id", "source", "version_id"}))
                         throw Error("알 수 없는 항목이 있습니다: " + field);
                     if (cursor.peek() == 'n') {
                         cursor.expect('n');
@@ -892,6 +895,14 @@ Preset parsePresetJson(const std::string& json)
                         cursor.expect('l');
                     } else if (field == "project_id") {
                         project = cursor.string();
+                    } else if (field == "source") {
+                        const std::string value = cursor.string();
+                        if (value == "curseforge")
+                            source = ModSource::CurseForge;
+                        else if (value == "modrinth")
+                            source = ModSource::Modrinth;
+                        else
+                            throw Error("모드 출처는 modrinth 또는 curseforge 입니다.");
                     } else {
                         version = cursor.string();
                     }
@@ -899,7 +910,7 @@ Preset parsePresetJson(const std::string& json)
                 cursor.expect('}');
                 if (!project)
                     throw Error("project_id 값이 없습니다.");
-                items.push_back(ModRef{*project, version});
+                items.push_back(ModRef{*project, version, source});
             }
             cursor.expect(']');
             mods = items;

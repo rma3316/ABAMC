@@ -15,9 +15,12 @@ class Error : public std::runtime_error {
 
 enum class ModLoader { Fabric, NeoForge };
 
+enum class ModSource { Modrinth, CurseForge };
+
 struct ModRef {
     std::string projectId;
     std::optional<std::string> versionId;
+    ModSource source = ModSource::Modrinth;
 };
 
 struct ServerRef {
