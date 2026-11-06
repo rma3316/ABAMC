@@ -1,117 +1,34 @@
-<p align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/program_info/org.prismlauncher.PrismLauncher.logo-darkmode.svg">
-  <source media="(prefers-color-scheme: light)" srcset="/program_info/org.prismlauncher.PrismLauncher.logo.svg">
-  <img alt="Prism Launcher" src="/program_info/org.prismlauncher.PrismLauncher.logo.svg" width="40%">
-</picture>
-</p>
+# ABAMC
 
-<p align="center">
-  <b>ABAMC</b> is a fork of Prism Launcher. It is not Prism Launcher and is not endorsed by or affiliated with the Prism Launcher project.<br />
-  A host makes a code for the Minecraft version, loader, pinned mods, and server address. A friend pastes that code and gets an instance.<br />
-  <br />The upstream project is a <b>fork</b> of the MultiMC Launcher and is <b>not</b> endorsed by it.
-</p>
+친구들과 같은 마크 모드로 서버에 들어가기 위한 런처입니다. 버전, 로더, 모드, 서버 주소를 한 코드로 맞춥니다.
 
-## Installation
+## 쓰는 방법
 
-- All downloads and instructions for Prism Launcher can be found on our [Website](https://prismlauncher.org/download).
-- Last build status can be found in the [GitHub Actions](https://github.com/PrismLauncher/PrismLauncher/actions) tab (this also includes the pull requests status).
+방장은 **코드 만들기**에서 정합니다.
 
-<p align="center">
-<a href="https://repology.org/project/prismlauncher/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/prismlauncher.svg?columns=3" alt="Packaging status">
-</a>
-</p>
+- 마크 버전
+- Fabric 또는 NeoForge와 로더 버전
+- Modrinth에서 고른 모드. 고르는 순간의 버전으로 고정됩니다.
+- 서버 주소
 
-### Development Builds
+그러면 `pc1.`으로 시작하는 코드가 나옵니다. 그 코드를 친구에게 보내면 됩니다.
 
-Please understand that these builds are not intended for most users. There may be bugs, and other instabilities. You have been warned.
+친구는 **코드로 추가**에 그 코드를 붙여 넣습니다. 이름, 버전, 로더, 서버, 모드 목록이 보이면 **인스턴스 만들기**를 누릅니다. 모드는 Modrinth에서 받고, 서버 주소는 그 인스턴스의 멀티플레이 목록에 들어갑니다. 마크와 자바는 그 인스턴스를 처음 실행할 때 받습니다.
 
-There are development builds available through:
+모드가 들어 있는 zip이 이미 있으면 **인스턴스 추가**로 인스턴스를 만든 뒤, 그 인스턴스 카드 위에 zip을 놓습니다. `.jar`만 `mods` 폴더에 들어갑니다.
 
-- [GitHub Actions](https://github.com/PrismLauncher/PrismLauncher/actions) (includes builds from pull requests opened by contributors)
-- [nightly.link](https://prismlauncher.org/nightly) (this will always point only to the latest version of develop)
+언어는 한글과 영어입니다.
 
-These have debug information in the binaries, so their file sizes are relatively larger.
+## 받기
 
-Prebuilt Development builds are provided for **Linux**, **Windows** and **macOS**.
+GitHub Release에 올라갑니다.
 
-On Linux, we also offer our own [Flatpak nightly repository](https://github.com/PrismLauncher/flatpak). Most software centers are able to install it by opening [this link](https://flatpak.prismlauncher.org/prismlauncher-nightly.flatpakref).
+- `ABAMC_Windows-x64.exe`
+- `ABAMC_Windows-arm64.exe`
+- `ABAMC_Linux-x86_64.AppImage`
+- `ABAMC_Linux-aarch64.AppImage`
+- `ABAMC_macOS.dmg`
 
-## Community & Support
+## 라이선스
 
-Feel free to create a GitHub issue if you find a bug or want to suggest a new feature. We have multiple community spaces where other community members can help you:
-
-- **Our Discord server:**
-
-[![Prism Launcher Discord server](https://discordapp.com/api/guilds/1031648380885147709/widget.png?style=banner3)](https://prismlauncher.org/discord)
-
-- **Our Matrix space:**
-
-[![Prism Launcher Space](https://img.shields.io/matrix/prismlauncher:matrix.org?style=for-the-badge&label=Matrix%20Space&logo=matrix&color=purple)](https://prismlauncher.org/matrix)
-
-- **Our Subreddit:**
-
-[![r/PrismLauncher](https://img.shields.io/reddit/subreddit-subscribers/prismlauncher?style=for-the-badge&logo=reddit)](https://prismlauncher.org/reddit)
-
-## Translations
-
-The translation effort for Prism Launcher is hosted on [Weblate](https://hosted.weblate.org/projects/prismlauncher/launcher/) and information about translating Prism Launcher is available at <https://github.com/PrismLauncher/Translations>.
-
-## Building
-
-If you want to build Prism Launcher yourself, check the [build instructions](https://prismlauncher.org/wiki/development/build-instructions).
-
-## Sponsors & Partners
-
-We thank all the wonderful backers over at Open Collective! Support Prism Launcher by [becoming a backer](https://opencollective.com/prismlauncher).
-
-[![OpenCollective Backers](https://opencollective.com/prismlauncher/backers.svg?width=890&limit=1000)](https://opencollective.com/prismlauncher#backers)
-
-Thanks to JetBrains for providing us a few licenses for all their products, as part of their [Open Source program](https://www.jetbrains.com/opensource/).
-
-<a href="https://jb.gg/OpenSource">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://www.jetbrains.com/company/brand/img/logo_jb_dos_4.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg">
-  <img alt="JetBrains logo" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg" width="40%">
-</picture>
-</a>
-
-Thanks to Weblate for hosting our translation efforts.
-
-<a href="https://hosted.weblate.org/engage/prismlauncher/">
-<img src="https://hosted.weblate.org/widgets/prismlauncher/-/open-graph.png" alt="Translation status" width="300" />
-</a>
-
-Thanks to Netlify for providing us their excellent web services, as part of their [Open Source program](https://www.netlify.com/open-source/).
-
-<a href="https://www.netlify.com"> <img src="https://www.netlify.com/v3/img/components/netlify-color-accent.svg" alt="Deploys by Netlify" /> </a>
-
-Thanks to the awesome people over at [MacStadium](https://www.macstadium.com/), for providing M1-Macs for development purposes!
-
-<a href="https://www.macstadium.com"><img src="https://uploads-ssl.webflow.com/5ac3c046c82724970fc60918/5c019d917bba312af7553b49_MacStadium-developerlogo.png" alt="Powered by MacStadium" width="300"></a>
-
-## Forking/Redistributing/Custom builds policy
-
-You are free to fork, redistribute and provide custom builds as long as you follow the terms of the [license](LICENSE) (this is a legal responsibility), and if you made code changes rather than just packaging a custom build, please do the following as a basic courtesy:
-
-- Make it clear that your fork is not Prism Launcher and is not endorsed by or affiliated with the Prism Launcher project (<https://prismlauncher.org>).
-- Go through [CMakeLists.txt](CMakeLists.txt) and change Prism Launcher's API keys to your own or set them to empty strings (`""`) to disable them (this way the program will still compile but the functionality requiring those keys will be disabled).
-
-If you have any questions or want any clarification on the above conditions please make an issue and ask us.
-
-If you are just building Prism Launcher for your distribution, please make sure to set the `Launcher_BUILD_PLATFORM` to a slug representing your distribution. Examples are `archlinux`, `fedora` and `nixpkgs`.
-
-Note that if you build this software without removing the provided API keys in [CMakeLists.txt](CMakeLists.txt) you are accepting the following terms and conditions:
-
-- [Microsoft Identity Platform Terms of Use](https://docs.microsoft.com/en-us/legal/microsoft-identity-platform/terms-of-use)
-- [CurseForge 3rd Party API Terms and Conditions](https://support.curseforge.com/en/support/solutions/articles/9000207405-curse-forge-3rd-party-api-terms-and-conditions)
-
-If you do not agree with these terms and conditions, then remove the associated API keys from the [CMakeLists.txt](CMakeLists.txt) file by setting them to an empty string (`""`).
-
-## License [![https://github.com/PrismLauncher/PrismLauncher/blob/develop/LICENSE](https://img.shields.io/github/license/PrismLauncher/PrismLauncher?label=License&logo=gnu&color=C4282D)](LICENSE)
-
-All launcher code is available under the GPL-3.0-only license.
-
-The logo and related assets are under the CC BY-SA 4.0 license.
+GPL-3.0. `LICENSE`를 보면 됩니다.

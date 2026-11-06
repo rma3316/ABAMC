@@ -157,7 +157,7 @@ runs:
         certificate-profile-name: PrismLauncher
 
         files: |
-          ${{ github.workspace }}\PrismLauncher-Setup.exe
+          ${{ github.workspace }}\ABAMC-Setup.exe
 
         # recommended in https://github.com/Azure/artifact-signing-action#timestamping-1
         timestamp-rfc3161: 'http://timestamp.acs.microsoft.com'
@@ -191,4 +191,4 @@ runs:
       uses: actions/upload-artifact@v7
       with:
         name: PrismLauncher-${{ inputs.artifact-name }}-Setup-${{ inputs.version }}-${{ inputs.build-type }}
-        path: PrismLauncher-Setup.exe
+        path: ABAMC-Setup.exe
