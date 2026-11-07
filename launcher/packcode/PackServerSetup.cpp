@@ -128,6 +128,12 @@ void ServerSetup::fetchNextMod()
         m_reply->deleteLater();
         m_reply = nullptr;
         if (failed) {
+            if (curseForge) {
+                emit status(QStringLiteral("CurseForge에서 받지 못해 빼둡니다: %1").arg(project));
+                ++m_modIndex;
+                fetchNextMod();
+                return;
+            }
             fail(QStringLiteral("모드 정보를 받지 못했습니다: %1").arg(project));
             return;
         }
@@ -234,7 +240,7 @@ void ServerSetup::downloadLoader()
     const QString loader = QString::fromStdString(*m_preset.loaderVersion);
     QUrl url;
     if (m_preset.loader == ModLoader::Fabric) {
-        url = QUrl(QStringLiteral("https://meta.fabricmc.net/v2/versions/loader/%1/%2/server/jar").arg(game, loader));
+        url = QUrl(QStringLiteral("https://meta.fabricmc.net/v2/versions/loader/%1/%2/stable/server/jar").arg(game, loader));
         m_pendingJarName = QStringLiteral("fabric-server-launch.jar");
     } else {
         url = QUrl(QStringLiteral("https://maven.neoforged.net/releases/net/neoforged/neoforge/%1/neoforge-%1-installer.jar").arg(loader));

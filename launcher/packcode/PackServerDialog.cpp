@@ -4,6 +4,8 @@
 #include "Application.h"
 
 #include <QCheckBox>
+#include <QDir>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -97,7 +99,19 @@ void PackServerDialog::prepare()
 
     const QString directory =
         APPLICATION->dataRoot() + QStringLiteral("/servers/") + QString::fromStdString(preset.instanceDirectoryName());
-    const QString java = APPLICATION->javaPath().trimmed();
+    QString java = APPLICATION->javaPath().trimmed();
+    const QFileInfo javaInfo(java);
+    if (javaInfo.isDir()) {
+        const QString binary = QDir(java).filePath(
+#ifdef Q_OS_WIN
+            QStringLiteral("bin/java.exe")
+#else
+            QStringLiteral("bin/java")
+#endif
+        );
+        if (QFileInfo::exists(binary))
+            java = binary;
+    }
 
     if (!m_setup) {
         m_setup = new PackCode::ServerSetup(this);
